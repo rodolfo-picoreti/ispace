@@ -1,5 +1,7 @@
 #!/bin/bash
 
+__USER=$USER
+
 if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
     OS=$DISTRIB_ID
@@ -26,6 +28,7 @@ if [[ $EUID != 0 ]]; then
     exit $?
 fi
 
+sudo apt-get install -y build-essential
 sudo apt-get install -y cmake
 
 BOOST_VERSION=`ldconfig -p | grep -Eo 'libboost_[a-z]+.so.1.[0-9]+' | head -n 1 | cut -d . -f 4`
@@ -37,11 +40,12 @@ if (("$BOOST_VERSION" < 58)); then
 	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
 	tar -xf download
 	cd boost_1_60_0/
-	./b2
+	./bootstrap.sh
 	sudo ./b2 install
 
 	cd ..
-	rm -rf boost_1_60_0/
+	sudo chmod -R 755 boost_1_60_0/
+	sudo chown -R $__USER boost_1_60_0/
 	sudo ldconfig
 fi
 
@@ -66,7 +70,8 @@ if [[ $? != 0 ]]; then
 	export LD_LIBRARY_PATH
 
 	cd ../..
-	rm -rf rabbitmq-c/
+	sudo chmod -R 755 rabbitmq-c/
+	sudo chown -R $__USER rabbitmq-c/
 	sudo ldconfig
 fi
 
@@ -86,7 +91,8 @@ if [[ $? != 0 ]]; then
 	sudo make install
 
 	cd ../..
-	rm -rf SimpleAmqpClient/
+	sudo chmod -R 755 SimpleAmqpClient/
+	sudo chown -R $__USER SimpleAmqpClient/
 	sudo ldconfig
 fi
 
@@ -106,7 +112,8 @@ if [[ $? != 0 ]]; then
 	sudo make install
 
 	cd ../..
-	rm -rf msgpack-c/
+	sudo chmod -R 755 msgpack-c/
+	sudo chown -R $__USER msgpack-c/
 	sudo ldconfig
 fi
 
