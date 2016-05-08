@@ -1,9 +1,44 @@
 #!/bin/bash
 
-# get su privileges
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    OS=$DISTRIB_ID
+    VER=$DISTRIB_RELEASE
+elif [ -f /etc/debian_version ]; then
+    OS=Debian  # XXX or Ubuntu??
+    VER=$(cat /etc/debian_version)
+elif [ -f /etc/redhat-release ]; then
+    # TODO: add code for Red Hat and CentOS here
+    ...
+else
+    OS=$(uname -s)
+    VER=$(uname -r)
+fi
+
+if [[ $OS != "Ubuntu" ]]; then
+	echo 'Unsupported OS: '$OS
+	exit 1
+fi
+
+# Get super user privileges
 if [[ $EUID != 0 ]]; then
     sudo "$0" "$@"
     exit $?
+fi
+
+# boost installation 
+if [[ -z $(ldconfig -p | grep libboost) ]]; then
+	echo 'libboost not found! installing...'
+
+	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
+	tar -xf download
+	cd boost_1_60_0/
+	./b2
+	sudo ./b2 install
+
+	cd ..
+	rm -rf boost_1_60_0/
+	sudo ldconfig
 fi
 
 # librabbitmq installation 
@@ -12,12 +47,13 @@ pkg-config --exists librabbitmq # exit code ($?) = 0 if successful
 if [[ $? != 0 ]]; then 
 	echo 'librabbitmq not found! installing...'
 
+	sudo apt-get install libssl-dev
+	
 	git clone https://github.com/alanxz/rabbitmq-c
 	cd rabbitmq-c
 	mkdir build
 	cd build
 	cmake ..
-	cmake --build [--config Release] .
 
 	make -j4
 	sudo make install
@@ -27,6 +63,7 @@ if [[ $? != 0 ]]; then
 
 	cd ../..
 	rm -rf rabbitmq-c/
+	sudo ldconfig
 fi
 
 # libSimpleAmqpClient installation 
@@ -46,6 +83,7 @@ if [[ $? != 0 ]]; then
 
 	cd ../..
 	rm -rf SimpleAmqpClient/
+	sudo ldconfig
 fi
 
 # msgpack installation 
@@ -65,5 +103,6 @@ if [[ $? != 0 ]]; then
 
 	cd ../..
 	rm -rf msgpack-c/
+	sudo ldconfig
 fi
 
