@@ -26,8 +26,12 @@ if [[ $EUID != 0 ]]; then
     exit $?
 fi
 
+sudo apt-get install -y cmake
+
+BOOST_VERSION=`ldconfig -p | grep -Eo 'libboost_[a-z]+.so.1.[0-9]+' | head -n 1 | cut -d . -f 4`
+
 # boost installation 
-if [[ -z $(ldconfig -p | grep libboost) ]]; then
+if (("$BOOST_VERSION" < 58)); then
 	echo 'libboost not found! installing...'
 
 	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
@@ -47,7 +51,7 @@ pkg-config --exists librabbitmq # exit code ($?) = 0 if successful
 if [[ $? != 0 ]]; then 
 	echo 'librabbitmq not found! installing...'
 
-	sudo apt-get install libssl-dev
+	sudo apt-get install libssl-dev -y
 	
 	git clone https://github.com/alanxz/rabbitmq-c
 	cd rabbitmq-c
