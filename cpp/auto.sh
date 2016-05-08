@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ yes != "$STDBUF" ]; then
+    STDBUF=yes /usr/bin/stdbuf -i0 -o0 -e0 "$0"
+    exit $?
+fi
+
 # shell will exit immediately if a command exits with a nonzero exit value
 set -e
 
