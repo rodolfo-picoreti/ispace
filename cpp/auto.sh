@@ -39,6 +39,7 @@ if (("$BOOST_VERSION" < 58)); then
 
 	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
 	tar -xf download
+	rm download
 	cd boost_1_60_0/
 	./bootstrap.sh
 	sudo ./b2 install

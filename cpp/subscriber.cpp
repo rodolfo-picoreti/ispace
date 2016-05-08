@@ -1,15 +1,13 @@
-#include <SimpleAmqpClient/SimpleAmqpClient.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <tuple>
 
 #include <msgpack.hpp>
-
-using namespace AmqpClient;
-
-//g++ subscriber.cpp -std=c++11 `pkg-config --libs --cflags msgpack` `pkg-config --libs --cflags libSimpleAmqpClient`
+#include <SimpleAmqpClient/SimpleAmqpClient.h>
 
 int main() {
+    using namespace AmqpClient;
     
     const std::string host = "127.0.0.1";
     int port = 5672;
@@ -26,18 +24,28 @@ int main() {
     const std::string routing_key = "*.info";
     channel->BindQueue(queue_name, exchange_name, routing_key);
 
-    channel->BasicConsume(queue_name, "hodor");
+    channel->BasicConsume(queue_name);
 
     while (1) {
-        BasicMessage::ptr_t msg_out = channel->BasicConsumeMessage("hodor")->Message(); 
-        auto body = msg_out->Body();
-        std::size_t offset = 0;
+        BasicMessage::ptr_t message;
+        message = channel->BasicConsumeMessage()->Message(); 
+        
+        auto body = message->Body();
+        
+        if (message->ContentType() == "application/msgpack") {
+            std::size_t offset = 0;
 
-        auto unpacked = msgpack::unpack(body.data(), body.size(), offset);
-        auto obj = unpacked.get();
+            auto unpacked = msgpack::unpack(body.data(), body.size(), offset);
+            auto payload = unpacked.get();
 
-        std::cout << obj << std::endl;
+            std::cout << " [x] Received: " << payload << "\n";
+        } 
+        else if (message->ContentType() == "application/json") {
+            std::cout << " [x] Received: " << body << "\n";
+        }
+        else {
+            std::cout << " [!] Invalid ContentType: " << message->ContentType() << "\n";
+        }
     }
-
 }
 
