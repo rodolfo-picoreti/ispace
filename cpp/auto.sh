@@ -1,17 +1,17 @@
 #!/bin/bash
 
-if [ yes != "$STDBUF" ]; then
-    STDBUF=yes /usr/bin/stdbuf -i0 -o0 -e0 "$0"
-    exit $?
-fi
+# if [ yes != "$STDBUF" ]; then
+#     STDBUF=yes /usr/bin/stdbuf -i0 -o0 -e0 "$0"
+#     exit $?
+# fi
 
 # shell will exit immediately if a command exits with a nonzero exit value
-set -e
+# set -e
 
-exec 0< /dev/null
-exec 1> log.txt
-exec 2> /dev/null
-exec 3> /dev/tty 
+# exec 0< /dev/null
+# exec 1> log.txt
+# exec 2> /dev/null
+# exec 3> /dev/tty 
 
 __USER=$USER
 
@@ -31,7 +31,7 @@ else
 fi
 
 if [[ $OS != "Ubuntu" ]]; then
-	printf 'Unsupported OS: '$OS  >&3 
+	printf 'Unsupported OS: '$OS   
 	exit 1
 fi
 
@@ -41,15 +41,16 @@ if [[ $EUID != 0 ]]; then
     exit $?
 fi
 
-sudo apt-get install -y build-essential
-sudo apt-get install -y cmake
+printf '%-50s' ' [x] Installing dependencies'   
+sudo apt-get install -y build-essential cmake libssl-dev
+printf 'done!\n'   
 
-printf '%-50s' ' [x] Searching for boost...'  >&3 
+printf '%-50s' ' [x] Searching for boost...'   
 BOOST_VERSION=`ldconfig -p | grep -Eo 'libboost_[a-z]+.so.1.[0-9]+' | head -n 1 | cut -d . -f 4`
 
 # boost installation 
 if (("$BOOST_VERSION" < 58)); then
-	printf 'not found! Installing...\n'  >&3 
+	printf 'not found! Installing...\n'   
 
 	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
 	tar -xf download
@@ -63,17 +64,15 @@ if (("$BOOST_VERSION" < 58)); then
 	sudo chown -R $__USER boost_1_60_0/
 	sudo ldconfig
 else
-	printf 'found!\n'  >&3 
+	printf 'found!\n'   
 fi
 
 # librabbitmq installation 
-printf '%-50s' ' [x] Searching for librabbitmq...'  >&3 
+printf '%-50s' ' [x] Searching for librabbitmq...'   
 pkg-config --exists librabbitmq # exit code ($?) = 0 if successful  
 
 if [[ $? != 0 ]]; then 
-	printf 'not found! Installing...\n'  >&3 
-
-	sudo apt-get install libssl-dev -y
+	printf 'not found! Installing...\n'   
 	
 	git clone https://github.com/alanxz/rabbitmq-c
 	cd rabbitmq-c
@@ -92,15 +91,15 @@ if [[ $? != 0 ]]; then
 	sudo chown -R $__USER rabbitmq-c/
 	sudo ldconfig
 else
-	printf 'found!\n'  >&3 
+	printf 'found!\n'   
 fi
 
 # libSimpleAmqpClient installation 
-printf '%-50s' ' [x] Searching for libSimpleAmqpClient...'  >&3 
+printf '%-50s' ' [x] Searching for libSimpleAmqpClient...'   
 pkg-config --exists libSimpleAmqpClient # exit code ($?) = 0 if successful  
 
 if [[ $? != 0 ]]; then 
-	printf 'not found! Installing...\n'  >&3 
+	printf 'not found! Installing...\n'   
 
 	git clone https://github.com/alanxz/SimpleAmqpClient
 	cd SimpleAmqpClient
@@ -116,14 +115,14 @@ if [[ $? != 0 ]]; then
 	sudo chown -R $__USER SimpleAmqpClient/
 	sudo ldconfig
 else
-	printf 'found!\n'  >&3 
+	printf 'found!\n'   
 fi
 
 # msgpack installation 
-printf '%-50s' ' [x] Searching for msgpack...'  >&3 
+printf '%-50s' ' [x] Searching for msgpack...'   
 pkg-config --exists msgpack # exit code ($?) = 0 if successful  
 if [[ $? != 0 ]]; then 
-	printf 'not found! Installing...\n'  >&3 
+	printf 'not found! Installing...\n'   
 
 	git clone https://github.com/msgpack/msgpack-c.git
 	cd msgpack-c
@@ -139,7 +138,7 @@ if [[ $? != 0 ]]; then
 	sudo chown -R $__USER msgpack-c/
 	sudo ldconfig
 else
-	printf 'found!\n'  >&3 
+	printf 'found!\n'   
 fi
 
-rm log.txt
+printf '[x] Done...\n'   
