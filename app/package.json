@@ -1,0 +1,18 @@
+{
+  "name": "app",
+  "private": true,
+  "scripts": {
+    "start": "meteor run"
+  },
+  "dependencies": {
+    "express": "^4.13.4",
+    "express-graphql": "^0.5.1",
+    "graphql": "^0.5.0",
+    "amqplib": "^0.4.1",
+    "meteor-node-stubs": "~0.2.0",
+    "react": "^15.0.2",
+    "react-addons-pure-render-mixin": "^15.0.2",
+    "react-dom": "^15.0.2",
+    "react-json-inspector": "^7.0.0"
+  }
+}
