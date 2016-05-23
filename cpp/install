@@ -1,18 +1,5 @@
 #!/bin/bash
 
-# if [ yes != "$STDBUF" ]; then
-#     STDBUF=yes /usr/bin/stdbuf -i0 -o0 -e0 "$0"
-#     exit $?
-# fi
-
-# shell will exit immediately if a command exits with a nonzero exit value
-# set -e
-
-# exec 0< /dev/null
-# exec 1> log.txt
-# exec 2> /dev/null
-# exec 3> /dev/tty 
-
 __USER=$USER
 
 if [ -f /etc/lsb-release ]; then
@@ -82,9 +69,9 @@ if [[ $? != 0 ]]; then
 
 	make -j4
 	sudo make install
-	
-	LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu
-	export LD_LIBRARY_PATH
+	if [[ $LD_LIBRARY_PATH != *"/usr/local/lib/x86_64-linux-gnu"* ]]; then   
+		echo 'export LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH' >> ~/.bashrc
+	fi
 
 	cd ../..
 	sudo chmod -R 755 rabbitmq-c/
@@ -142,3 +129,6 @@ else
 fi
 
 printf '[x] Done...\n'   
+
+printf '[x] Compiling...\n'   
+./compile
