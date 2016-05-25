@@ -14,5 +14,8 @@ SRCS := $(SRCS:.cpp=)
 
 all: $(SRCS)
 
+clean:
+	rm -f $(SRCS)
+
 $(SRCS):
 	$(COMPILER) $@.cpp -o $@ $(OBJS) $(FLAGS) $(LIBS) 
