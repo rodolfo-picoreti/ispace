@@ -52,18 +52,6 @@ void Service::process() {
   } 
 }
 
-std::string Service::body() const {
-  return request->Body();
-}
-
-void Service::reply(const std::string& body) const {
-  BasicMessage::ptr_t response = BasicMessage::Create();
-  response->ContentType("application/msgpack");
-  response->CorrelationId(request->CorrelationId());
-  response->Body(body);
-  channel->BasicPublish(exchange, request->ReplyTo(), response);
-}
-
 void Service::stop() {
   running.store(false);
 }

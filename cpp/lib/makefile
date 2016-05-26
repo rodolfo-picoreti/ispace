@@ -2,9 +2,12 @@ COMPILER = g++
 FLAGS = -std=c++14 -O3
 
 SRCS := $(wildcard *.cpp)
-SRCS := $(SRCS:.cpp=)
+OBJS := $(SRCS:.cpp=.o)
 
-all: $(SRCS)
+all: $(OBJS)
 
-$(SRCS):
-	$(COMPILER) -c $@.cpp $(FLAGS) -o $@.o 
+clean:
+	rm -f *.o
+
+%.o: %.cpp
+	$(COMPILER) -c $< $(FLAGS) -o $@

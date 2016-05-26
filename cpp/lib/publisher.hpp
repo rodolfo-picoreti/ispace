@@ -1,8 +1,6 @@
 #ifndef __IS_PUBLISHER_HPP__
 #define __IS_PUBLISHER_HPP__
 
-#include <iostream>
-
 #include <string>
 #include <thread>
 #include <sstream>

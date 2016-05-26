@@ -10,25 +10,26 @@
 
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 #include "opencv2/core.hpp"
-#include "opencv2/features2d.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 
 #include "../lib/subscriber.hpp"
+#include "../lib/broker.hpp"
 
-const std::string host { "127.0.0.1" };
-int port { 5672 };
-const std::string username { "ispace" };
-const std::string password { "ispace" };
-const std::string vhost { "is" };
+typedef std::tuple <int, int, int, std::vector<unsigned char>> payload_t;
 
-typedef std::tuple<int, int, int, std::vector<unsigned char>> payload_t;
+void usage() {
+  std::cout << "sub-image <service-name> \n"
+            << "\t where <service-name> is the broker avahi service name" << std::endl; 
+  exit(1);
+}
 
 int main(int argc, char const *argv[]) {
+  if (argc != 2) usage();
 
-  auto channel = AmqpClient::Channel::Create(host, port, username, password, vhost); 
-  is::Subscriber subscriber(channel, "data", "webcam");
+  is::Broker broker(argv[1]);
+  broker.discover();
+
+  is::Subscriber subscriber(broker.channel(), "data", "webcam");
   
   while (1) {
     payload_t payload;

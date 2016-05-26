@@ -1,8 +1,6 @@
 #ifndef __IS_SUBSCRIBRER_HPP__
 #define __IS_SUBSCRIBRER_HPP__
 
-#include <iostream>
-
 #include <string>
 #include <future>
 #include <msgpack.hpp>
