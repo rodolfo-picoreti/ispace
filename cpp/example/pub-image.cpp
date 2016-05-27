@@ -26,19 +26,30 @@ void usage() {
 int main(int argc, char const *argv[]) {
   if (argc != 2) usage();
 
+  std::cout << "Starting camera... " << std::endl;
   cv::VideoCapture capture { 0 }; // open the default camera
   if (!capture.isOpened()) {
     std::cout << "Failed to open capture device" << std::endl;
   }
 
+  std::cout << "Searching for broker... " << std::endl;
   is::Broker broker(argv[1]);
   broker.discover();
 
   is::Publisher publisher(broker.channel(), "data", "webcam");
   
-  std::cout << "Publishing... " << std::endl;
+
+  double fps = 30.0;
+  auto delta = std::chrono::milliseconds(static_cast<int>(std::round(1000.0/fps)));
+
+  unsigned int count = 0;
+  cv::Mat frame;
+  capture >> frame;
+  std::cout << "Publishing... " << frame.rows << 'x' << frame.cols 
+            << ' ' << (frame.dataend - frame.datastart)*fps/1024/1024 << " MB/s" << std::endl;
+
   while (1) {
-    cv::Mat frame;
+    auto now = std::chrono::system_clock::now();
     capture >> frame;
 
     std::vector<unsigned char> raw(frame.datastart, frame.dataend);
@@ -47,7 +58,11 @@ int main(int argc, char const *argv[]) {
     }; 
 
     publisher.publish(payload);
-    std::this_thread::sleep_for(std::chrono::milliseconds(33));
+
+    std::cout << '\r' << count << std::flush;
+    ++count;
+    
+    std::this_thread::sleep_until(now + delta);
   }
 
   return 0;

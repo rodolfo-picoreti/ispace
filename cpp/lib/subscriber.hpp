@@ -23,7 +23,7 @@ public:
 public:
 
   template <typename Payload>
-  void consume(Payload& payload) {
+  BasicMessage::ptr_t consume(Payload& payload) {
     Envelope::ptr_t envelope;
     BasicMessage::ptr_t message; 
     
@@ -38,6 +38,8 @@ public:
     // object is valid during the object_handle instance is alive.
     msgpack::object object = handle.get();
     object.convert(payload);
+
+    return message;
   }
 }; // ::Subscriber
 

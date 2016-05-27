@@ -23,10 +23,12 @@ public:
   
   template <typename Payload>
   void publish(const Payload& payload) const {
+    auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
     std::stringstream body;
     msgpack::pack(body, payload);
     auto message = BasicMessage::Create(body.str());
     message->ContentType("application/msgpack");
+    message->Timestamp(timestamp); // nano
     channel->BasicPublish(exchange, key, message);
   }
 

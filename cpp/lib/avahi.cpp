@@ -90,12 +90,15 @@ void Avahi::browse_callback(
     case AVAHI_BROWSER_REMOVE: 
       break;
       
+    case AVAHI_BROWSER_ALL_FOR_NOW:
     case AVAHI_BROWSER_CACHE_EXHAUSTED:
       self->outdated = false;
       break;
 
-    case AVAHI_BROWSER_ALL_FOR_NOW:
     case AVAHI_BROWSER_FAILURE: 
+      throw(std::runtime_error("Avahi browser failure"));
+      break;
+      
     default:
       break;
   }

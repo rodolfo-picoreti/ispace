@@ -26,14 +26,22 @@ void usage() {
 int main(int argc, char const *argv[]) {
   if (argc != 2) usage();
 
+  std::cout << "Searching for broker... " << std::endl;
   is::Broker broker(argv[1]);
   broker.discover();
 
   is::Subscriber subscriber(broker.channel(), "data", "webcam");
   
+  std::cout << "Subscribed... " << std::endl;
+  double mean = 0;
   while (1) {
     payload_t payload;
-    subscriber.consume(payload);
+    auto msg = subscriber.consume(payload);
+    auto now = std::chrono::system_clock::now().time_since_epoch().count();
+    auto millis = (now - msg->Timestamp())/1000000;
+    mean = mean*0.8 + millis*0.2;
+
+    std::cout << "\r        \r" << millis << ':' << std::round(mean) << std::flush;
 
     int rows = std::get<0>(payload);
     int cols = std::get<1>(payload);
@@ -44,5 +52,4 @@ int main(int argc, char const *argv[]) {
     cv::imshow("Received image", image);
     cv::waitKey(1);
   }     
-
 }
