@@ -3,31 +3,27 @@
 
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 
+#include <tuple>
+#include <string>
+
 #include "avahi.hpp"
 
 namespace is {
 
 using namespace AmqpClient;
 
+typedef std::tuple<std::string, std::string, std::string> Credentials; 
+
 class Broker {
-  
-  Channel::ptr_t _channel;
-  const std::string hostname;
-  int port { 5672 };
-  const std::string username { "ispace" };
-  const std::string password { "ispace" };
-  const std::string vhost { "is" };
+
+  is::Avahi avahi;
 
 public:
-  Broker(
-    const std::string& hostname = "rabbit", int port = 5672,
-    const std::string& username = "ispace", 
-    const std::string& password = "ispace",
-    const std::string& vhost = "is");
 
-  void discover(); 
+  Broker();
 
-  Channel::ptr_t channel();
+  const std::vector<Avahi::Service>& discover(const std::string& hostname, int port = 5672); 
+  Channel::ptr_t connect(const Avahi::Service& service, const Credentials& credentials);
 
 };
 

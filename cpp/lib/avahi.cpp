@@ -38,12 +38,14 @@ Avahi::~Avahi() {
   avahi_simple_poll_free(simple_poll);
 }
 
-void Avahi::discover() {
+const std::vector<Avahi::Service>& Avahi::discover() {
   avahi_simple_poll_loop(simple_poll);
+  return services;
 }
 
-const std::vector<Avahi::Service>& Avahi::discovered() {
-  return services;
+const std::vector<Avahi::Service>& Avahi::discover(filter_t filter) {
+  this->filter = filter;
+  return discover();
 }
 
 /* Called whenever the client or server state changes */

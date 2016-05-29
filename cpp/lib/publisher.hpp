@@ -28,7 +28,7 @@ public:
     msgpack::pack(body, payload);
     auto message = BasicMessage::Create(body.str());
     message->ContentType("application/msgpack");
-    message->Timestamp(timestamp); // nano
+    message->Timestamp(timestamp); // nanoseconds
     channel->BasicPublish(exchange, key, message);
   }
 

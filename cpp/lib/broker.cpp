@@ -4,23 +4,22 @@ namespace is {
   
 using namespace AmqpClient;
 
-Broker::Broker(const std::string& hostname, int port, 
-  const std::string& username, const std::string& password, const std::string& vhost) : 
-hostname(hostname), port(port), username(username), password(password), vhost(vhost) {}
+Broker::Broker() : avahi("_rabbitmq._tcp") { }
 
-void Broker::discover() {
-  is::Avahi avahi("_rabbitmq._tcp", [&] (const is::Avahi::Service& service) {
+const std::vector<Avahi::Service>& Broker::discover(const std::string& hostname, int port) {
+  return avahi.discover([&] (const is::Avahi::Service& service) {
     return (service.port == port && service.name == hostname);
   });
-  
-  avahi.discover();
-  auto services = avahi.discovered();
-  _channel = AmqpClient::Channel::Create(services.at(0).ip, port, username, password, vhost); 
 }
 
-Channel::ptr_t Broker::channel() {
-  return _channel;
+Channel::ptr_t Broker::connect(const Avahi::Service& service, const Credentials& credentials) {
+  return AmqpClient::Channel::Create (
+    service.ip, 
+    service.port, 
+    std::get<0>(credentials),
+    std::get<1>(credentials),
+    std::get<2>(credentials)
+  ); 
 }
-
 
 } // ::is

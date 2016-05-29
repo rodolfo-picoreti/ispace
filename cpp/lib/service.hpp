@@ -25,26 +25,32 @@ class Service {
   std::unordered_map<std::string, handle_t> map;
 
   BasicMessage::ptr_t request;
+
   std::atomic_bool running;
+  std::thread listener;
 
 public:
 
   Service(Channel::ptr_t channel, const std::string& service);
-  
+  ~Service();
+
   void bind(const std::string& key, handle_t handle);
   void process();
 
   void stop();
-  std::thread listen();
+  void listen();
+  void listen_sync();
 
 public:
 
   template <typename Payload>
   void args(Payload& payload) {
-    auto body = request->Body();
-    std::size_t offset = 0;
-    auto unpacked = msgpack::unpack(body.data(), body.size(), offset).get();
-    unpacked.convert(payload);
+    std::string body(request->Body());
+    msgpack::object_handle handle = msgpack::unpack(body.data(), body.size());
+    
+    // object is valid during the object_handle instance is alive.
+    msgpack::object object = handle.get();
+    object.convert(payload);
   }
 
   template <typename Payload>

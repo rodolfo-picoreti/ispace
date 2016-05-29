@@ -24,8 +24,17 @@ Service::Service(Channel::ptr_t channel, const std::string& service)
   channel->BasicConsume(queue, "", true, true, false);
 }
 
+Service::~Service() {
+  if (running.load()) {
+    stop();
+    listener.join();
+  }
+}
+
 void Service::bind(const std::string& key, handle_t handle) {
-  map.emplace(key, handle);
+  if (running.load() == false) {
+    map.emplace(key, handle);
+  }
 }
 
 void Service::process() {
@@ -56,15 +65,21 @@ void Service::stop() {
   running.store(false);
 }
 
-std::thread Service::listen() {
+void Service::listen() {
   running.store(true);
 
-  return std::thread([&]() {
+  listener = std::thread([&]() {
     while (running.load()) {
       this->process();
     }
     return 0;
   });
+}
+
+void Service::listen_sync() {
+  while (1) {
+    this->process();  
+  }
 }
 
 } // ::is

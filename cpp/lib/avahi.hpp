@@ -25,6 +25,7 @@
 namespace is {
 
 class Avahi {
+  
   AvahiClient* client;
   AvahiServiceBrowser* browser;
   AvahiSimplePoll* simple_poll;
@@ -56,9 +57,9 @@ public:
 
   Avahi(const char* type, filter_t filter = [] (const Service&) { return true; });
   ~Avahi();
-
-  void discover();
-  const std::vector<Service>& discovered();
+  
+  const std::vector<Service>& discover();
+  const std::vector<Service>& discover(filter_t filter);
 
 private:
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd lib
-make
+make -j4
 cd ../example
-make
+make -j4

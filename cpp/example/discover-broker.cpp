@@ -1,13 +1,12 @@
 #include "../lib/avahi.hpp"
 
 int main(int argc, char*argv[]) {
-  is::Avahi avahi("_rabbitmq._tcp", [] (const is::Avahi::Service& service) {
-    return (service.port == 5672);
-  });
   
-  avahi.discover();
+  is::Avahi avahi("_rabbitmq._tcp");
 
-  for (auto& service : avahi.discovered()) {
+  auto services = avahi.discover();
+
+  for (auto& service : services) {
     std::cout << "name: " << service.name << '\n'
               << "domain: " << service.domain << '\n'
               << "host: " << service.host << '\n'

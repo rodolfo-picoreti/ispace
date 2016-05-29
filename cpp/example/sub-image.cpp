@@ -16,6 +16,7 @@
 #include "../lib/broker.hpp"
 
 typedef std::tuple <int, int, int, std::vector<unsigned char>> payload_t;
+auto credentials = std::make_tuple("ispace", "ispace", "is");
 
 void usage() {
   std::cout << "sub-image <service-name> \n"
@@ -26,22 +27,25 @@ void usage() {
 int main(int argc, char const *argv[]) {
   if (argc != 2) usage();
 
-  std::cout << "Searching for broker... " << std::endl;
-  is::Broker broker(argv[1]);
-  broker.discover();
+  // Discover and connect to broker
+  std::cout << "Searching for broker... " << std::flush;
+  is::Broker broker;
+  auto found = broker.discover(argv[1]); // list of brokers found
+  auto channel = broker.connect(found.front(), credentials); // connect to the first
+  std::cout << "[ok]" << std::endl;
 
-  is::Subscriber subscriber(broker.channel(), "data", "webcam");
-  
-  std::cout << "Subscribed... " << std::endl;
+  // Create data subscriber
+  is::Subscriber subscriber(channel, "data", "webcam");
+
   double mean = 0;
   while (1) {
     payload_t payload;
     auto msg = subscriber.consume(payload);
-    auto now = std::chrono::system_clock::now().time_since_epoch().count();
-    auto millis = (now - msg->Timestamp())/1000000;
-    mean = mean*0.8 + millis*0.2;
+    auto latency = is::Subscriber::latency(msg);
+    mean = mean*0.8 + latency*0.2;
 
-    std::cout << "\r        \r" << millis << ':' << std::round(mean) << std::flush;
+    // print mean latency time
+    std::cout << "\r        \r" << std::round(mean) << std::flush;
 
     int rows = std::get<0>(payload);
     int cols = std::get<1>(payload);
@@ -49,7 +53,7 @@ int main(int argc, char const *argv[]) {
     unsigned char* data = std::get<3>(payload).data();
 
     cv::Mat image(rows, cols, type, data);
-    cv::imshow("Received image", image);
+    cv::imshow("Webcam stream", image);
     cv::waitKey(1);
   }     
 }

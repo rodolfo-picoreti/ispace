@@ -19,6 +19,14 @@ class Subscriber {
 public:
 
   Subscriber(Channel::ptr_t channel, const std::string& exchange, const std::string& key);
+  
+  static auto latency(BasicMessage::ptr_t message) {
+    using namespace std::chrono;
+
+    auto now = system_clock::now().time_since_epoch().count();
+    auto diff = nanoseconds(now - message->Timestamp());
+    return duration_cast<milliseconds>(diff).count();
+  }
 
 public:
 
@@ -39,7 +47,7 @@ public:
     msgpack::object object = handle.get();
     object.convert(payload);
 
-    return message;
+    return std::move(message);
   }
 }; // ::Subscriber
 
