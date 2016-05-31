@@ -19,10 +19,17 @@ Client::Client(Channel::ptr_t channel, const std::string& key)
 }
 
 bool Client::receive(const uint& id, const uint& timeout) {
+  std::set<uint> ids { id };
+  return receive(ids, timeout);
+}
+
+bool Client::receive(const std::set<uint>& ids, const uint& timeout) {
   using namespace std::chrono;
   auto end = high_resolution_clock::now() + milliseconds(timeout);
   
+  uint received = 0;
   while (1) {  
+
     Envelope::ptr_t envelope;
     BasicMessage::ptr_t message; 
 
@@ -45,12 +52,18 @@ bool Client::receive(const uint& id, const uint& timeout) {
              message->CorrelationIdIsSet() == false);
       
     uint cid = std::stoi(message->CorrelationId());
-    map.emplace(cid, std::move(message));
 
-    if (cid == id) {
-      // packet arrived, return
-      return true;
+    map.emplace(cid, std::move(message));
+    
+    auto iterator = ids.find(cid);
+    if (iterator != ids.end()) {
+      ++received;
+      if (received == ids.size()) {
+        // all packets arrived, return
+        return true;
+      }
     }
+
   }
 }
 

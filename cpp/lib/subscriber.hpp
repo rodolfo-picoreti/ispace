@@ -15,30 +15,30 @@ class Subscriber {
   Channel::ptr_t channel;
   const std::string exchange;
   const std::string key;
-  
+
+  BasicMessage::ptr_t message; 
+
 public:
 
   Subscriber(Channel::ptr_t channel, const std::string& exchange, const std::string& key);
   
-  static auto latency(BasicMessage::ptr_t message) {
-    using namespace std::chrono;
-
-    auto now = system_clock::now().time_since_epoch().count();
-    auto diff = nanoseconds(now - message->Timestamp());
-    return duration_cast<milliseconds>(diff).count();
-  }
+  unsigned int latency();
 
 public:
 
   template <typename Payload>
-  BasicMessage::ptr_t consume(Payload& payload) {
+  bool consume(Payload& payload, int timeout = -1) {
     Envelope::ptr_t envelope;
-    BasicMessage::ptr_t message; 
     
     do {
-      envelope = channel->BasicConsumeMessage();
+      bool newmsg = channel->BasicConsumeMessage(envelope, timeout);
+      if (newmsg == false) {
+        // timeout reached and nothing was received
+        return false;
+      }
       message = envelope->Message(); 
-    } while (message->ContentType() != "application/msgpack");
+    } while (message->ContentType() != "application/msgpack" ||
+             message->TimestampIsSet() == false);
 
     std::string body(message->Body());
     msgpack::object_handle handle = msgpack::unpack(body.data(), body.size());
@@ -47,8 +47,9 @@ public:
     msgpack::object object = handle.get();
     object.convert(payload);
 
-    return std::move(message);
+    return true;
   }
+
 }; // ::Subscriber
 
 } // ::is

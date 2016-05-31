@@ -17,7 +17,7 @@ typedef std::tuple <int, int, int, std::vector<unsigned char>> payload_t;
 auto credentials = std::make_tuple("ispace", "ispace", "is");
 
 void usage() {
-  std::cout << "pub-image <service-name> \n"
+  std::cout << "pub-image <service-name> <topic> \n"
             << "\t where <service-name> is the broker avahi service name" << std::endl; 
   exit(1);
 }
@@ -53,7 +53,9 @@ void service_fps(is::Service& service) {
 }
 
 int main(int argc, char const *argv[]) {
-  if (argc != 2) usage();
+  if (argc != 3) usage();
+  using namespace std::chrono;
+  std::string topic { argv[2] };
 
   // Open camera device
   std::cout << "Starting camera... " << std::flush;
@@ -67,21 +69,27 @@ int main(int argc, char const *argv[]) {
   std::cout << "Searching for broker... " << std::flush;
   is::Broker broker;
   auto found = broker.discover(argv[1]);
-  std::cout << "[ok]" << std::endl;
+  if (found.empty()) {
+    std::cout << "[error]" << std::endl;
+    exit(-1);
+  } else {
+    std::cout << "[ok]" << std::endl;
+  }
   
   // Add set fps service
   auto service_channel = broker.connect(found.front(), credentials);
-  is::Service service(service_channel, "webcam");
-  service.bind("webcam.fps", service_fps);
+  is::Service service(service_channel, topic);
+  service.bind(topic + ".fps", service_fps);
   service.listen();
 
   // Create data publisher
   auto pub_channel = broker.connect(found.front(), credentials);
-  is::Publisher publisher(pub_channel, "data", "webcam");
+  is::Publisher publisher(pub_channel, "data", topic);
   
+  double diff = 0;
   while (1) {
     static unsigned int count = 0;
-    auto now = std::chrono::system_clock::now();
+    auto now = system_clock::now();
 
     cv::Mat frame;
     capture >> frame;
@@ -91,9 +99,12 @@ int main(int argc, char const *argv[]) {
       frame.rows, frame.cols, frame.type(), raw
     }; 
 
+    auto tic = high_resolution_clock::now();
     publisher.publish(payload);
+    auto toc = high_resolution_clock::now();
+    diff = 0.8*diff + 0.2*duration_cast<milliseconds>(toc-tic).count();
 
-    std::cout << '\r' << count << std::flush;
+    std::cout << '\r' << diff << std::flush;
     ++count;
     
     std::this_thread::sleep_until(now + get_delta());

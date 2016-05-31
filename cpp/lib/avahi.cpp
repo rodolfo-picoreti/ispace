@@ -123,6 +123,8 @@ void Avahi::resolve_callback(
   
   switch (event) {
     case AVAHI_RESOLVER_FOUND: { 
+      if (address->proto == AVAHI_PROTO_INET6) break;
+
       char ip[AVAHI_ADDRESS_STR_MAX];
       avahi_address_snprint(ip, sizeof(ip), address);
 

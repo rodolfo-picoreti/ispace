@@ -4,13 +4,12 @@
 #include <iostream>
 
 #include <string>
-#include <mutex>
-#include <future>
-#include <thread>
 #include <sstream>
+#include <chrono>
+#include <set>
 #include <msgpack.hpp>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
-#include <mutex>
+#include <algorithm>
 
 namespace is {
 
@@ -25,15 +24,15 @@ class Client {
   const std::string key;
   std::string queue;
 
-  std::unordered_map<uint, BasicMessage::ptr_t> map;
-  
   uint correlationId;
+  std::unordered_map<uint, BasicMessage::ptr_t> map;
 
 public:
 
   Client(Channel::ptr_t channel, const std::string& key);
 
   bool receive(const uint& id, const uint& timeout);
+  bool receive(const std::set<uint>& ids, const uint& timeout);
 
   template <typename Payload>
   bool consume(const uint& id, Payload& payload) {

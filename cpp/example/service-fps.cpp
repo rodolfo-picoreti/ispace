@@ -23,9 +23,15 @@ int main(int argc, char* argv[]) {
   std::cout << "Searching for broker... " << std::flush;
   is::Broker broker;
   auto found = broker.discover(argv[1]); // list of brokers found
-  auto channel = broker.connect(found.front(), credentials); // connect to the first
-  std::cout << "[ok]" << std::endl;
+  if (found.empty()) {
+    std::cout << "[error]" << std::endl;
+    exit(-1);
+  } else {
+    std::cout << "[ok]" << std::endl;
+  }
 
+  auto channel = broker.connect(found.front(), credentials); // connect to the first
+  
   is::Client client(channel, "webcam.fps");
   
   std::tuple<double> args { std::stod(argv[2]) };

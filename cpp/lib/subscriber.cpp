@@ -7,7 +7,7 @@ using namespace AmqpClient;
 Subscriber::Subscriber(Channel::ptr_t channel, 
                        const std::string& exchange, 
                        const std::string& key) 
-  : channel(channel), exchange(exchange), key(key) {
+  : channel(channel), exchange(exchange), key(key), message(nullptr) {
   
   // passive durable auto_delete 
   auto xtype = Channel::EXCHANGE_TYPE_TOPIC;
@@ -16,6 +16,14 @@ Subscriber::Subscriber(Channel::ptr_t channel,
   std::string queue = channel->DeclareQueue("");
   channel->BindQueue(queue, exchange, key);
   channel->BasicConsume(queue);
+}
+
+unsigned int Subscriber::latency() {
+  using namespace std::chrono;
+
+  auto now = system_clock::now().time_since_epoch().count();
+  auto diff = nanoseconds(now - message->Timestamp());
+  return duration_cast<milliseconds>(diff).count();
 }
 
 } // ::is
