@@ -29,7 +29,11 @@ if [[ $EUID != 0 ]]; then
 fi
 
 printf '%-50s' ' [x] Installing dependencies'   
-apt-get install -y build-essential cmake libssl-dev autoconf libpgm-dev libpgm-5.* libboost1.58-all-dev
+declare -a packages=("build-essential" "cmake" "libssl-dev" "autoconf" "libpgm-dev" "libpgm-5.*" "libboost1.58-all-dev")
+for package in "${packages[@]}"
+do
+	apt-get install -y $package
+done
 printf 'done!\n'   
 
 printf '%-50s' ' [x] Searching for boost...'   
