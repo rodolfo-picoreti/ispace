@@ -9,7 +9,7 @@ fi
 echo 'deb http://www.rabbitmq.com/debian/ testing main' | tee /etc/apt/sources.list.d/rabbitmq.list
 wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | apt-key add -
 apt-get update
-apt-get install rabbitmq-server
+apt-get install rabbitmq-server -y
 
 rabbitmqctl delete_user guest
 rabbitmqctl delete_vhost /
@@ -22,3 +22,7 @@ rabbitmqctl add_user ispace ispace
 rabbitmqctl add_vhost is
 rabbitmqctl set_permissions -p is admin ".*" ".*" ".*"
 rabbitmqctl set_permissions -p is ispace ".*" ".*" ".*"
+
+rabbitmq-plugins enable rabbitmq_management
+
+printf '[x] Done...\n[x] Management plugin running at http://localhost:15672\n\n'   
