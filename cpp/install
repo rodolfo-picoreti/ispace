@@ -29,7 +29,7 @@ if [[ $EUID != 0 ]]; then
 fi
 
 apt-get update
-apt-get upgrade
+apt-get upgrade -y
 
 printf '%-50s' ' [x] Installing dependencies'   
 declare -a packages=("build-essential" "cmake" "libssl-dev" "autoconf" "libtool" "libpgm-dev" "libpgm-5.*")
