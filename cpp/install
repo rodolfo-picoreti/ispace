@@ -29,7 +29,7 @@ if [[ $EUID != 0 ]]; then
 fi
 
 printf '%-50s' ' [x] Installing dependencies'   
-sudo apt-get install -y build-essential cmake libssl-dev
+apt-get install -y build-essential cmake libssl-dev autoconf libpgm-dev libpgm-5.*
 printf 'done!\n'   
 
 printf '%-50s' ' [x] Searching for boost...'   
@@ -128,7 +128,49 @@ else
 	printf 'found!\n'   
 fi
 
-printf '[x] Done...\n'   
+# libzmq installation 
+printf '%-50s' ' [x] Searching for libzmq...'   
+pkg-config --exists libzmq # exit code ($?) = 0 if successful  
+if [[ $? != 0 ]]; then 
+	printf 'not found! Installing...\n'   
 
-printf '[x] Compiling...\n'   
-./compile
+	git clone https://github.com/zeromq/libzmq
+	cd libzmq
+	./autogen.sh
+	./configure --with-pgm
+
+	make -j4
+	sudo make install
+
+	cd ../..
+	sudo chmod -R 755 libzmq/
+	sudo chown -R $__USER libzmq/
+	sudo ldconfig
+else
+	printf 'found!\n'   
+fi
+
+# opencv installation 
+printf '%-50s' ' [x] Searching for opencv...'   
+pkg-config --exists opencv # exit code ($?) = 0 if successful  
+if [[ $? != 0 ]]; then 
+	printf 'not found! Installing...\n'   
+
+	git clone https://github.com/Itseez/opencv
+	cd opencv
+	mkdir build
+	cd build
+	cmake ..
+	
+	make -j4
+	sudo make install
+
+	cd ../..
+	sudo chmod -R 755 opencv/
+	sudo chown -R $__USER opencv/
+	sudo ldconfig
+else
+	printf 'found!\n'   
+fi
+
+printf '[x] Done...\n'   
