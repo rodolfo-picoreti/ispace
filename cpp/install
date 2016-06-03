@@ -29,34 +29,34 @@ if [[ $EUID != 0 ]]; then
 fi
 
 printf '%-50s' ' [x] Installing dependencies'   
-declare -a packages=("build-essential" "cmake" "libssl-dev" "autoconf" "libpgm-dev" "libpgm-5.*" "libboost1.58-all-dev")
+declare -a packages=("build-essential cmake libssl-dev autoconf" "libpgm-dev libpgm-5.*" "libboost1.58-all-dev")
 for package in "${packages[@]}"
 do
 	apt-get install -y $package
 done
 printf 'done!\n'   
 
-printf '%-50s' ' [x] Searching for boost...'   
-BOOST_VERSION=`ldconfig -p | grep -Eo 'libboost_[a-z]+.so.1.[0-9]+' | head -n 1 | cut -d . -f 4`
-
-# boost installation 
-if (("$BOOST_VERSION" < 58)); then
-	printf 'not found! Installing...\n'   
-
-	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
-	tar -xf download
-	rm download
-	cd boost_1_60_0/
-	./bootstrap.sh
-	sudo ./b2 install
-
-	cd ..
-	sudo chmod -R 755 boost_1_60_0/
-	sudo chown -R $__USER boost_1_60_0/
-	sudo ldconfig
-else
-	printf 'found!\n'   
-fi
+#printf '%-50s' ' [x] Searching for boost...'   
+#BOOST_VERSION=`ldconfig -p | grep -Eo 'libboost_[a-z]+.so.1.[0-9]+' | head -n 1 | cut -d . -f 4`
+#
+## boost installation 
+#if (("$BOOST_VERSION" < 58)); then
+#	printf 'not found! Installing...\n'   
+#
+#	wget https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz/download
+#	tar -xf download
+#	rm download
+#	cd boost_1_60_0/
+#	./bootstrap.sh
+#	sudo ./b2 install
+#
+#	cd ..
+#	sudo chmod -R 755 boost_1_60_0/
+#	sudo chown -R $__USER boost_1_60_0/
+#	sudo ldconfig
+#else
+#	printf 'found!\n'   
+#fi
 
 # librabbitmq installation 
 printf '%-50s' ' [x] Searching for librabbitmq...'   
@@ -146,7 +146,7 @@ if [[ $? != 0 ]]; then
 	make -j4
 	sudo make install
 
-	cd ../..
+	cd ..
 	sudo chmod -R 755 libzmq/
 	sudo chown -R $__USER libzmq/
 	sudo ldconfig
