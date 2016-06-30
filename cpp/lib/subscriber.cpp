@@ -2,18 +2,22 @@
 
 namespace is {
 
+using namespace std;
 using namespace AmqpClient;
 
-Subscriber::Subscriber(Channel::ptr_t channel, 
-                       const std::string& exchange, 
-                       const std::string& key) 
+Subscriber::Subscriber(Channel channel, const string& key, const string& exchange) 
   : channel(channel), exchange(exchange), key(key), message(nullptr) {
   
   // passive durable auto_delete 
-  auto xtype = Channel::EXCHANGE_TYPE_TOPIC;
+  auto xtype = AmqpClient::Channel::EXCHANGE_TYPE_TOPIC;
   channel->DeclareExchange(exchange, xtype, false, true, false);
+  
+  Table arguments {
+    { TableKey("x-max-length"), TableValue(1) }
+  };
 
-  std::string queue = channel->DeclareQueue("");
+  // passive durable exclusive auto_delete arguments
+  string queue = channel->DeclareQueue("", false, false, true, true, arguments);
   channel->BindQueue(queue, exchange, key);
   channel->BasicConsume(queue);
 }

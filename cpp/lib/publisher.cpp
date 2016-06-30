@@ -2,15 +2,13 @@
 
 namespace is {
 
-using namespace AmqpClient;
+using namespace std;
 
-Publisher::Publisher(Channel::ptr_t channel, 
-                     const std::string& exchange, 
-                     const std::string& key)
-  : channel(channel), exchange(exchange), key(key) {
+Publisher::Publisher(Channel channel, const string& entity, const string& exchange)
+  : channel(channel), exchange(exchange), entity(entity) {
 
   // passive durable auto_delete 
-  auto xtype = Channel::EXCHANGE_TYPE_TOPIC;
+  auto xtype = AmqpClient::Channel::EXCHANGE_TYPE_TOPIC;
   channel->DeclareExchange(exchange, xtype, false, true, false);
 }
 

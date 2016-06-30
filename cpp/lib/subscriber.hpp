@@ -3,31 +3,34 @@
 
 #include <string>
 #include <future>
-#include <msgpack.hpp>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
+
+#include "channel.hpp"
+#include "serialize.hpp"
 
 namespace is {
 
+using namespace std;
 using namespace AmqpClient;
 
 class Subscriber {
 
-  Channel::ptr_t channel;
-  const std::string exchange;
-  const std::string key;
+  Channel channel;
+  const string exchange;
+  const string key;
 
   BasicMessage::ptr_t message; 
 
 public:
 
-  Subscriber(Channel::ptr_t channel, const std::string& exchange, const std::string& key);
+  Subscriber(Channel channel, const string& key, const string& exchange = "data");
   
   unsigned int latency();
 
 public:
 
-  template <typename Payload>
-  bool consume(Payload& payload, int timeout = -1) {
+  template <typename DataType>
+  bool consume(DataType& data, int timeout = -1) {
     Envelope::ptr_t envelope;
     
     do {
@@ -40,13 +43,7 @@ public:
     } while (message->ContentType() != "application/msgpack" ||
              message->TimestampIsSet() == false);
 
-    std::string body(message->Body());
-    msgpack::object_handle handle = msgpack::unpack(body.data(), body.size());
-    
-    // object is valid during the object_handle instance is alive.
-    msgpack::object object = handle.get();
-    object.convert(payload);
-
+    deserialize(data, message->Body());
     return true;
   }
 

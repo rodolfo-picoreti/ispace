@@ -3,33 +3,33 @@
 
 #include <string>
 #include <thread>
-#include <sstream>
-#include <msgpack.hpp>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
+
+#include "channel.hpp"
 
 namespace is {
 
 using namespace AmqpClient;
+using namespace std;
 
 class Publisher {
 
-  Channel::ptr_t channel;
-  const std::string exchange;
-  const std::string key;
+  Channel channel;
+  const string exchange;
+  const string entity;
   
 public:
 
-  Publisher(Channel::ptr_t channel, const std::string& exchange, const std::string& key);
+  Publisher(Channel channel, const string& entity, const string& exchange = "data");
   
-  template <typename Payload>
-  void publish(const Payload& payload) const {
-    auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
-    std::stringstream body;
-    msgpack::pack(body, payload);
-    auto message = BasicMessage::Create(body.str());
+  template <typename DataType>
+  void publish(const DataType& data, const string& topic) {
+    auto timestamp = chrono::system_clock::now().time_since_epoch().count();
+    auto payload = serialize(data);
+    auto message = BasicMessage::Create(payload);
     message->ContentType("application/msgpack");
-    message->Timestamp(timestamp); // nanoseconds
-    channel->BasicPublish(exchange, key, message);
+    message->Timestamp(timestamp); 
+    channel->BasicPublish(exchange, entity + '.' + topic, message);
   }
 
 }; // ::Publisher

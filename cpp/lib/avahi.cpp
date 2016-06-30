@@ -3,8 +3,7 @@
 
 namespace is {
 
-Avahi::Avahi(const char* type, filter_t filter) 
-  : outdated(true), queued_resolvers(0), filter(filter) {
+Avahi::Avahi(const char* type) : outdated(true), queued_resolvers(0) {
   
   simple_poll = avahi_simple_poll_new();
   
@@ -38,20 +37,20 @@ Avahi::~Avahi() {
   avahi_simple_poll_free(simple_poll);
 }
 
-const std::vector<Avahi::Service>& Avahi::discover() {
+const std::vector<Avahi::ServiceInfo>& Avahi::discover(filter_t filt) {
+  services.clear();
+  filter = filt;
   avahi_simple_poll_loop(simple_poll);
   return services;
 }
 
-const std::vector<Avahi::Service>& Avahi::discover(filter_t filter) {
-  this->filter = filter;
-  return discover();
-}
-
 /* Called whenever the client or server state changes */
 
-void Avahi::client_callback(
-  AvahiClient* client, AvahiClientState state, void* data) {
+void Avahi::client_callback (
+    AvahiClient* client, 
+    AvahiClientState state, 
+    void* data
+  ) {
 
   assert(client);
   Avahi* self = (Avahi*) data;
@@ -66,11 +65,17 @@ void Avahi::client_callback(
 /* Called whenever a new services becomes available 
    on the LAN or is removed from the LAN */
 
-void Avahi::browse_callback(
-  AvahiServiceBrowser* browser, AvahiIfIndex interface, 
-  AvahiProtocol protocol, AvahiBrowserEvent event,
-  const char* name, const char* type, const char* domain, 
-  AvahiLookupResultFlags flags, void* data) {
+void Avahi::browse_callback ( 
+    AvahiServiceBrowser* browser, 
+    AvahiIfIndex interface, 
+    AvahiProtocol protocol, 
+    AvahiBrowserEvent event,
+    const char* name, 
+    const char* type, 
+    const char* domain, 
+    AvahiLookupResultFlags flags, 
+    void* data
+  ) {
 
   assert(browser);
 
@@ -109,12 +114,21 @@ void Avahi::browse_callback(
 /* Called whenever a service has been resolved 
    successfully or timed out */
 
-void Avahi::resolve_callback(
-  AvahiServiceResolver* resolver, AvahiIfIndex interface,
-  AvahiProtocol protocol, AvahiResolverEvent event,
-  const char* name, const char* type, const char* domain, const char* host,
-  const AvahiAddress* address, uint16_t port, 
-  AvahiStringList* txt, AvahiLookupResultFlags flags, void* data) {
+void Avahi::resolve_callback (
+    AvahiServiceResolver* resolver, 
+    AvahiIfIndex interface,
+    AvahiProtocol protocol, 
+    AvahiResolverEvent event,
+    const char* name, 
+    const char* type, 
+    const char* domain, 
+    const char* host,
+    const AvahiAddress* address, 
+    uint16_t port, 
+    AvahiStringList* txt, 
+    AvahiLookupResultFlags flags, 
+    void* data
+  ) {
 
   assert(resolver);
 
@@ -128,9 +142,9 @@ void Avahi::resolve_callback(
       char ip[AVAHI_ADDRESS_STR_MAX];
       avahi_address_snprint(ip, sizeof(ip), address);
 
-      Avahi::Service service(name, domain, host, type, ip, port);
+      Avahi::ServiceInfo service { name, type, ip, port };
       if (self->filter(service)) {
-        self->services.push_back(service);
+        self->services.emplace_back(service);
       }
     }
 
