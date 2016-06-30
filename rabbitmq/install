@@ -12,16 +12,14 @@ apt-get update
 apt-get install rabbitmq-server avahi-daemon avahi-discover avahi-utils -y
 
 rabbitmqctl delete_user guest
-rabbitmqctl delete_vhost /
 
 rabbitmqctl add_user admin admin
 rabbitmqctl set_user_tags admin administrator
 
 rabbitmqctl add_user ispace ispace
 
-rabbitmqctl add_vhost is
-rabbitmqctl set_permissions -p is admin ".*" ".*" ".*"
-rabbitmqctl set_permissions -p is ispace ".*" ".*" ".*"
+rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+rabbitmqctl set_permissions -p / ispace ".*" ".*" ".*"
 
 rabbitmq-plugins enable rabbitmq_management
 
