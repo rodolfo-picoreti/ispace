@@ -6,6 +6,7 @@
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 
 #include "channel.hpp"
+#include "serialize.hpp"
 
 namespace is {
 

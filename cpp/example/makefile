@@ -14,7 +14,6 @@ SRCS := $(shell find $(SOURCEDIR) -name '*.cpp')
 EXECS := $(SRCS:.cpp=)
 
 all: $(EXECS)
-	echo $(SRCS)
 
 clean:
 	rm -f $(EXECS)

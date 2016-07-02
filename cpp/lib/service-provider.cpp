@@ -83,6 +83,8 @@ void ServiceProvider::listen() {
 }
 
 void ServiceProvider::listen_sync() {
+  running.store(true);
+  
   while (1) {
     this->process();  
   }
